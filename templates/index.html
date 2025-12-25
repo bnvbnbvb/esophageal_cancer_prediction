@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>食管癌肺转移风险预测系统</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🫁</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            padding: 30px 0;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .card-header-icon {
+            font-size: 2.5rem;
+        }
+
+        .card-header-text h2 {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+
+        .card-header-text p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .form-container {
+            padding: 30px;
+        }
+
+        .model-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+        }
+
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 18px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .api-status.checking {
+            background: #edf2f7;
+            color: #4a5568;
+        }
+
+        .api-status.success {
+            background: #f0fff4;
+            color: #276749;
+            border: 1px solid #9ae6b4;
+        }
+
+        .api-status.error {
+            background: #fff5f5;
+            color: #c53030;
+            border: 1px solid #feb2b2;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .api-status.checking .status-dot {
+            background: #a0aec0;
+        }
+
+        .api-status.success .status-dot {
+            background: #48bb78;
+        }
+
+        .api-status.error .status-dot {
+            background: #fc8181;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+        }
+
+        @media (max-width: 700px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .card-header {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.95rem;
+        }
+
+        .label-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 14px 45px 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background-color: #f8fafc;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23667eea' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 20px;
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+            background-color: white;
+        }
+
+        .form-group select:hover {
+            border-color: #cbd5e0;
+        }
+
+        .submit-section {
+            margin-top: 35px;
+            text-align: center;
+        }
+
+        .submit-btn {
+            padding: 18px 70px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1.15rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .submit-btn:active:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .submit-btn:disabled {
+            background: linear-gradient(135deg, #a0aec0 0%, #718096 100%);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 50px 70px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid #e2e8f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 25px;
+        }
+
+        .loading-content p {
+            color: #4a5568;
+            font-size: 1.1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            display: none;
+            background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+            border: 2px solid #fc8181;
+            color: #c53030;
+            padding: 18px 25px;
+            border-radius: 12px;
+            margin-top: 25px;
+            font-size: 0.95rem;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .result-section {
+            display: none;
+            margin-top: 35px;
+        }
+
+        .result-section.show {
+            display: block;
+            animation: slideUp 0.6s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-card {
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .result-header {
+            padding: 30px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .result-header.low {
+            background: linear-gradient(135deg, #48bb78 0%, #2f855a 100%);
+        }
+
+        .result-header.medium {
+            background: linear-gradient(135deg, #ed8936 0%, #c05621 100%);
+        }
+
+        .result-header.high {
+            background: linear-gradient(135deg, #fc8181 0%, #c53030 100%);
+        }
+
+        .result-icon {
+            font-size: 3.5rem;
+        }
+
+        .result-title h3 {
+            font-size: 1.6rem;
+            margin-bottom: 5px;
+        }
+
+        .result-title p {
+            opacity: 0.95;
+            font-size: 1rem;
+        }
+
+        .result-body {
+            background: white;
+            padding: 35px;
+        }
+
+        .probability-display {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .probability-circle {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            border: 10px solid #e2e8f0;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+
+        .probability-value {
+            font-size: 3rem;
+            font-weight: 700;
+        }
+
+        .probability-label {
+            font-size: 1rem;
+            color: #718096;
+            margin-top: 5px;
+        }
+
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 550px) {
+            .result-details {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .detail-item {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            padding: 22px;
+            border-radius: 14px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .detail-item:hover {
+            transform: translateX(5px);
+        }
+
+        .detail-item h4 {
+            color: #718096;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .detail-item p {
+            color: #2d3748;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .clinical-advice {
+            padding: 25px;
+            background: linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%);
+            border-radius: 14px;
+            border: 1px solid #90cdf4;
+            margin-bottom: 25px;
+        }
+
+        .clinical-advice h4 {
+            color: #2b6cb0;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+        }
+
+        .clinical-advice p {
+            color: #2c5282;
+            line-height: 1.8;
+            font-size: 0.95rem;
+        }
+
+        .new-prediction-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+            color: #4a5568;
+            border: 2px solid #cbd5e0;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .new-prediction-btn:hover {
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+            border-color: #a0aec0;
+            transform: translateY(-2px);
+        }
+
+        .disclaimer {
+            margin-top: 35px;
+            padding: 25px;
+            background: linear-gradient(135deg, #fffaf0 0%, #feebc8 100%);
+            border-radius: 14px;
+            border: 1px solid #f6ad55;
+        }
+
+        .disclaimer h4 {
+            color: #c05621;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+        }
+
+        .disclaimer p {
+            color: #744210;
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 25px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+        }
+
+        .footer a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🫁 食管癌肺转移风险预测系统</h1>
+            <p>Esophageal Cancer Lung Metastasis Risk Prediction System</p>
+        </div>
+
+        <div class="main-card">
+            <div class="card-header">
+                <div class="card-header-icon">🔬</div>
+                <div class="card-header-text">
+                    <h2>基于机器学习的精准预测</h2>
+                    <p>Random Forest Model | SMOTE Optimization | Cross-Validation</p>
+                </div>
+            </div>
+
+            <div class="form-container">
+                <div class="model-badge">
+                    <span>✓</span>
+                    <span>SEER数据库 | 7,484例患者 | AUC > 0.85</span>
+                </div>
+
+                <div class="api-status checking" id="apiStatus">
+                    <div class="status-dot"></div>
+                    <span>正在检查模型服务状态...</span>
+                </div>
+
+                <form id="predictionForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>
+                                <span class="label-icon">👤</span>
+                                种族 (Race)
+                            </label>
+                            <select id="race" name="race" required>
+                                <option value="">请选择...</option>
+                                <option value="White">白人 (White)</option>
+                                <option value="Black">黑人 (Black)</option>
+                                <option value="Other">其他 (Other)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <span class="label-icon">⚧</span>
+                                性别 (Sex)
+                            </label>
+                            <select id="sex" name="sex" required>
+                                <option value="">请选择...</option>
+                                <option value="Male">男性 (Male)</option>
+                                <option value="Female">女性 (Female)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <span class="label-icon">📍</span>
+                                原发部位 (Primary Site)
+                            </label>
+                            <select id="primarySite" name="primarySite" required>
+                                <option value="">请选择...</option>
+                                <option value="Upper third">上段 (Upper third)</option>
+                                <option value="Middle third">中段 (Middle third)</option>
+                                <option value="Lower third">下段 (Lower third)</option>
+                                <option value="Overlapping">跨区 (Overlapping)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <span class="label-icon">T</span>
+                                T分期 (T Stage)
+                            </label>
+                            <select id="tStage" name="tStage" required>
+                                <option value="">请选择...</option>
+                                <option value="T1">T1</option>
+                                <option value="T2">T2</option>
+                                <option value="T3">T3</option>
+                                <option value="T4">T4</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <span class="label-icon">N</span>
+                                N分期 (N Stage)
+                            </label>
+                            <select id="nStage" name="nStage" required>
+                                <option value="">请选择...</option>
+                                <option value="N0">N0</option>
+                                <option value="N1">N1</option>
+                                <option value="N2">N2</option>
+                                <option value="N3">N3</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <span class="label-icon">G</span>
+                                分化程度 (Grade)
+                            </label>
+                            <select id="grade" name="grade" required>
+                                <option value="">请选择...</option>
+                                <option value="Grade I">高分化 (Grade I)</option>
+                                <option value="Grade II">中分化 (Grade II)</option>
+                                <option value="Grade III">低分化 (Grade III)</option>
+                                <option value="Grade IV">未分化 (Grade IV)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <span class="label-icon">🎂</span>
+                                年龄分组 (Age)
+                            </label>
+                            <select id="age" name="age" required>
+                                <option value="">请选择...</option>
+                                <option value="<50">< 50岁</option>
+                                <option value="50-59">50-59岁</option>
+                                <option value="60-69">60-69岁</option>
+                                <option value="70-79">70-79岁</option>
+                                <option value=">=80">≥ 80岁</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <span class="label-icon">🔬</span>
+                                组织学类型 (Histology)
+                            </label>
+                            <select id="histology" name="histology" required>
+                                <option value="">请选择...</option>
+                                <option value="Adenocarcinoma">腺癌 (Adenocarcinoma)</option>
+                                <option value="Squamous cell carcinoma">鳞状细胞癌 (Squamous cell carcinoma)</option>
+                                <option value="Other">其他类型 (Other)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="submit-section">
+                        <button type="submit" class="submit-btn" id="submitBtn">
+                            🔮 开始预测 (Predict)
+                        </button>
+                    </div>
+                </form>
+
+                <div class="error-message" id="errorMessage"></div>
+
+                <div class="result-section" id="resultSection">
+                    <div class="result-card">
+                        <div class="result-header" id="resultHeader">
+                            <div class="result-icon" id="resultIcon">✅</div>
+                            <div class="result-title">
+                                <h3 id="resultTitle">预测结果</h3>
+                                <p id="resultSubtitle">Prediction Result</p>
+                            </div>
+                        </div>
+                        <div class="result-body">
+                            <div class="probability-display">
+                                <div class="probability-circle" id="probabilityCircle">
+                                    <div class="probability-value" id="probabilityValue">0%</div>
+                                    <div class="probability-label">肺转移概率</div>
+                                </div>
+                            </div>
+
+                            <div class="result-details">
+                                <div class="detail-item">
+                                    <h4>风险等级</h4>
+                                    <p id="riskLevelText">-</p>
+                                </div>
+                                <div class="detail-item">
+                                    <h4>预测分类</h4>
+                                    <p id="predictionClass">-</p>
+                                </div>
+                                <div class="detail-item">
+                                    <h4>决策阈值</h4>
+                                    <p id="thresholdValue">-</p>
+                                </div>
+                                <div class="detail-item">
+                                    <h4>模型置信度</h4>
+                                    <p id="confidenceValue">-</p>
+                                </div>
+                            </div>
+
+                            <div class="clinical-advice">
+                                <h4>📋 临床建议</h4>
+                                <p id="clinicalAdvice">-</p>
+                            </div>
+
+                            <button type="button" class="new-prediction-btn" onclick="resetForm()">
+                                🔄 进行新的预测
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="disclaimer">
+                    <h4>⚠️ 免责声明 (Disclaimer)</h4>
+                    <p>本预测系统基于SEER数据库训练的随机森林机器学习模型，仅供临床参考使用。预测结果不能替代专业医生的诊断和治疗决策。请结合患者的具体临床情况、影像学检查结果和实验室指标进行综合判断。模型性能可能因患者群体差异而有所不同。如有疑问，请咨询专业医疗人员。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2024 食管癌肺转移风险预测系统 | 基于 SEER 数据库 | 
+               <a href="/model_info" target="_blank">模型信息</a> | 
+               <a href="/health" target="_blank">服务状态</a>
+            </p>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p>正在使用随机森林模型进行预测分析...</p>
+        </div>
+    </div>
+
+    <script>
+        // API基础URL（同源部署时使用相对路径）
+        const API_BASE_URL = '';
+
+        // 页面加载时检查API状态
+        document.addEventListener('DOMContentLoaded', function() {
+            checkApiStatus();
+        });
+
+        // 检查API状态
+        async function checkApiStatus() {
+            const statusEl = document.getElementById('apiStatus');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    statusEl.className = 'api-status success';
+                    statusEl.innerHTML = `
+                        <div class="status-dot"></div>
+                        <span>✓ 模型服务运行正常 | 阈值: ${(data.threshold * 100).toFixed(1)}%</span>
+                    `;
+                    document.getElementById('submitBtn').disabled = false;
+                } else {
+                    throw new Error('API response not ok');
+                }
+            } catch (error) {
+                console.error('API check failed:', error);
+                statusEl.className = 'api-status error';
+                statusEl.innerHTML = `
+                    <div class="status-dot"></div>
+                    <span>✗ 模型服务连接失败，请刷新页面重试</span>
+                `;
+                document.getElementById('submitBtn').disabled = false;
+            }
+        }
+
+        // 表单提交处理
+        document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const errorMessage = document.getElementById('errorMessage');
+            const resultSection = document.getElementById('resultSection');
+            
+            // 收集表单数据
+            const formData = {
+                race: document.getElementById('race').value,
+                sex: document.getElementById('sex').value,
+                primarySite: document.getElementById('primarySite').value,
+                tStage: document.getElementById('tStage').value,
+                nStage: document.getElementById('nStage').value,
+                grade: document.getElementById('grade').value,
+                age: document.getElementById('age').value,
+                histology: document.getElementById('histology').value
+            };
+            
+            // 验证所有字段
+            for (let key in formData) {
+                if (!formData[key]) {
+                    showError('请填写所有必填字段后再进行预测');
+                    return;
+                }
+            }
+            
+            // 显示加载状态
+            loadingOverlay.classList.add('show');
+            errorMessage.classList.remove('show');
+            resultSection.classList.remove('show');
+            submitBtn.disabled = true;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/predict`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    displayResult(result);
+                } else {
+                    showError(result.error || '预测失败，请检查输入数据后重试');
+                }
+            } catch (error) {
+                console.error('Prediction error:', error);
+                showError('网络错误：无法连接到预测服务器。请检查网络连接后重试。');
+            } finally {
+                loadingOverlay.classList.remove('show');
+                submitBtn.disabled = false;
+            }
+        });
+
+        // 显示预测结果
+        function displayResult(result) {
+            const resultSection = document.getElementById('resultSection');
+            const resultHeader = document.getElementById('resultHeader');
+            const probability = result.probability;
+            const riskLevel = result.risk_level;
+            
+            // 设置风险等级样式
+            resultHeader.className = 'result-header ' + riskLevel;
+            
+            // 风险等级配置
+            const riskConfig = {
+                low: {
+                    icon: '✅',
+                    title: '低风险 (Low Risk)',
+                    subtitle: '肺转移风险较低，建议常规随访',
+                    color: '#48bb78',
+                    levelText: '低风险',
+                    advice: '患者肺转移风险较低。建议按常规随访计划进行定期复查，包括每6个月进行一次胸部X线或CT检查。保持健康生活方式，戒烟限酒，均衡饮食，适度运动。注意观察呼吸系统相关症状，如出现持续咳嗽、胸痛或呼吸困难，应及时就医。'
+                },
+                medium: {
+                    icon: '⚠️',
+                    title: '中等风险 (Medium Risk)',
+                    subtitle: '需要密切关注，建议加强监测',
+                    color: '#ed8936',
+                    levelText: '中等风险',
+                    advice: '患者存在中等程度的肺转移风险，需要引起重视。建议：(1) 增加随访频率至每3个月一次；(2) 进行胸部增强CT检查以排除早期肺转移病灶；(3) 定期检测肿瘤标志物（如CEA、SCC等）变化趋势；(4) 密切关注咳嗽、胸痛、呼吸困难、咯血等症状；(5) 必要时可考虑多学科团队（MDT）会诊，评估是否需要调整治疗方案。'
+                },
+                high: {
+                    icon: '🚨',
+                    title: '高风险 (High Risk)',
+                    subtitle: '风险较高，建议立即进一步检查',
+                    color: '#e53e3e',
+                    levelText: '高风险',
+                    advice: '患者肺转移风险较高，需要高度重视并积极干预。强烈建议：(1) 立即进行全面的影像学评估，包括胸部增强CT或PET-CT检查；(2) 组织多学科团队（MDT）会诊，包括胸外科、肿瘤内科、放疗科、影像科等专家；(3) 重新评估肿瘤分期和治疗方案，考虑是否需要系统性治疗；(4) 每1-2个月进行密切随访和影像学复查；(5) 加强营养支持和心理疏导；(6) 与患者及家属充分沟通病情和治疗选择。'
+                }
+            };
+            
+            const config = riskConfig[riskLevel];
+            
+            document.getElementById('resultIcon').textContent = config.icon;
+            document.getElementById('resultTitle').textContent = config.title;
+            document.getElementById('resultSubtitle').textContent = config.subtitle;
+            
+            // 设置概率显示
+            const probabilityPercent = (probability * 100).toFixed(1);
+            document.getElementById('probabilityValue').textContent = probabilityPercent + '%';
+            
+            // 设置圆圈颜色
+            const circle = document.getElementById('probabilityCircle');
+            circle.style.borderColor = config.color;
+            circle.style.color = config.color;
+            
+            // 设置详细信息
+            document.getElementById('riskLevelText').textContent = config.levelText;
+            document.getElementById('predictionClass').textContent = 
+                result.prediction === 1 ? '阳性 (可能转移)' : '阴性 (可能无转移)';
+            document.getElementById('thresholdValue').textContent = 
+                (result.threshold * 100).toFixed(1) + '%';
+            document.getElementById('confidenceValue').textContent = 
+                (result.confidence * 100).toFixed(1) + '%';
+            
+            // 设置临床建议
+            document.getElementById('clinicalAdvice').textContent = config.advice;
+            
+            // 显示结果区域并滚动到可见位置
+            resultSection.classList.add('show');
+            setTimeout(() => {
+                resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+
+        // 显示错误信息
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+            errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // 重置表单
+        function resetForm() {
+            document.getElementById('predictionForm').reset();
+            document.getElementById('resultSection').classList.remove('show');
+            document.getElementById('errorMessage').classList.remove('show');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
