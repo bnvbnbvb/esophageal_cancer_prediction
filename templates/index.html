@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>食管癌肺转移风险预测系统</title>
+    <title>Esophageal Cancer Lung Metastasis Risk Prediction System</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🫁</text></svg>">
     <style>
         * {
@@ -538,15 +538,15 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🫁 食管癌肺转移风险预测系统</h1>
-            <p>Esophageal Cancer Lung Metastasis Risk Prediction System</p>
+            <h1>🫁 Esophageal Cancer Lung Metastasis Risk Prediction</h1>
+            <p>Machine Learning-Based Clinical Decision Support System</p>
         </div>
 
         <div class="main-card">
             <div class="card-header">
                 <div class="card-header-icon">🔬</div>
                 <div class="card-header-text">
-                    <h2>基于机器学习的精准预测</h2>
+                    <h2>AI-Powered Precision Prediction</h2>
                     <p>Random Forest Model | SMOTE Optimization | Cross-Validation</p>
                 </div>
             </div>
@@ -554,12 +554,12 @@
             <div class="form-container">
                 <div class="model-badge">
                     <span>✓</span>
-                    <span>SEER数据库 | 7,484例患者 | AUC > 0.85</span>
+                    <span>SEER Database | 7,484 Patients | AUC > 0.85</span>
                 </div>
 
                 <div class="api-status checking" id="apiStatus">
                     <div class="status-dot"></div>
-                    <span>正在检查模型服务状态...</span>
+                    <span>Checking model service status...</span>
                 </div>
 
                 <form id="predictionForm">
@@ -567,49 +567,52 @@
                         <div class="form-group">
                             <label>
                                 <span class="label-icon">👤</span>
-                                种族 (Race)
+                                Race
                             </label>
                             <select id="race" name="race" required>
-                                <option value="">请选择...</option>
-                                <option value="White">白人 (White)</option>
-                                <option value="Black">黑人 (Black)</option>
-                                <option value="Other">其他 (Other)</option>
+                                <option value="">Please select...</option>
+                                <option value="White">White</option>
+                                <option value="Black">Black</option>
+                                <option value="Asian or Pacific Islander">Asian or Pacific Islander</option>
+                                <option value="American Indian/Alaska Native">American Indian/Alaska Native</option>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label>
                                 <span class="label-icon">⚧</span>
-                                性别 (Sex)
+                                Sex
                             </label>
                             <select id="sex" name="sex" required>
-                                <option value="">请选择...</option>
-                                <option value="Male">男性 (Male)</option>
-                                <option value="Female">女性 (Female)</option>
+                                <option value="">Please select...</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label>
                                 <span class="label-icon">📍</span>
-                                原发部位 (Primary Site)
+                                Primary Site
                             </label>
                             <select id="primarySite" name="primarySite" required>
-                                <option value="">请选择...</option>
-                                <option value="Upper third">上段 (Upper third)</option>
-                                <option value="Middle third">中段 (Middle third)</option>
-                                <option value="Lower third">下段 (Lower third)</option>
-                                <option value="Overlapping">跨区 (Overlapping)</option>
+                                <option value="">Please select...</option>
+                                <option value="Cervical esophagus">Cervical esophagus</option>
+                                <option value="Upper third of esophagus">Upper third of esophagus</option>
+                                <option value="Middle third of esophagus">Middle third of esophagus</option>
+                                <option value="Lower third of esophagus">Lower third of esophagus</option>
+                                <option value="Abdominal esophagus">Abdominal esophagus</option>
+                                <option value="Overlapping lesion of esophagus">Overlapping lesion of esophagus</option>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label>
                                 <span class="label-icon">T</span>
-                                T分期 (T Stage)
+                                T Stage
                             </label>
                             <select id="tStage" name="tStage" required>
-                                <option value="">请选择...</option>
+                                <option value="">Please select...</option>
                                 <option value="T1">T1</option>
                                 <option value="T2">T2</option>
                                 <option value="T3">T3</option>
@@ -620,10 +623,10 @@
                         <div class="form-group">
                             <label>
                                 <span class="label-icon">N</span>
-                                N分期 (N Stage)
+                                N Stage
                             </label>
                             <select id="nStage" name="nStage" required>
-                                <option value="">请选择...</option>
+                                <option value="">Please select...</option>
                                 <option value="N0">N0</option>
                                 <option value="N1">N1</option>
                                 <option value="N2">N2</option>
@@ -634,49 +637,50 @@
                         <div class="form-group">
                             <label>
                                 <span class="label-icon">G</span>
-                                分化程度 (Grade)
+                                Grade
                             </label>
                             <select id="grade" name="grade" required>
-                                <option value="">请选择...</option>
-                                <option value="Grade I">高分化 (Grade I)</option>
-                                <option value="Grade II">中分化 (Grade II)</option>
-                                <option value="Grade III">低分化 (Grade III)</option>
-                                <option value="Grade IV">未分化 (Grade IV)</option>
+                                <option value="">Please select...</option>
+                                <option value="Well differentiated; Grade I">Well differentiated (Grade I)</option>
+                                <option value="Moderately differentiated; Grade II">Moderately differentiated (Grade II)</option>
+                                <option value="Poorly differentiated; Grade III">Poorly differentiated (Grade III)</option>
+                                <option value="Undifferentiated; anaplastic; Grade IV">Undifferentiated/Anaplastic (Grade IV)</option>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label>
                                 <span class="label-icon">🎂</span>
-                                年龄分组 (Age)
+                                Age Group
                             </label>
                             <select id="age" name="age" required>
-                                <option value="">请选择...</option>
-                                <option value="<50">< 50岁</option>
-                                <option value="50-59">50-59岁</option>
-                                <option value="60-69">60-69岁</option>
-                                <option value="70-79">70-79岁</option>
-                                <option value=">=80">≥ 80岁</option>
+                                <option value="">Please select...</option>
+                                <option value="<50">&lt; 50 years</option>
+                                <option value="50-60">50-60 years</option>
+                                <option value="60-70">60-70 years</option>
+                                <option value="70-80">70-80 years</option>
+                                <option value="≥80">≥ 80 years</option>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label>
-                                <span class="label-icon">🔬</span>
-                                组织学类型 (Histology)
-                            </label>
-                            <select id="histology" name="histology" required>
-                                <option value="">请选择...</option>
-                                <option value="Adenocarcinoma">腺癌 (Adenocarcinoma)</option>
-                                <option value="Squamous cell carcinoma">鳞状细胞癌 (Squamous cell carcinoma)</option>
-                                <option value="Other">其他类型 (Other)</option>
-                            </select>
-                        </div>
+    <label>
+        <span class="label-icon">🔬</span>
+        Histology
+    </label>
+    <select id="histology" name="histology" required>
+        <option value="">Please select...</option>
+        <option value="Squamous Cell Carcinoma">Squamous Cell Carcinoma</option>
+        <option value="Adenocarcinoma">Adenocarcinoma</option>
+        <option value="Neuroendocrine Carcinoma">Neuroendocrine Carcinoma</option>
+        <option value="Other Carcinoma">Other Carcinoma</option>
+    </select>
+</div>
                     </div>
 
                     <div class="submit-section">
                         <button type="submit" class="submit-btn" id="submitBtn">
-                            🔮 开始预测 (Predict)
+                            🔮 Predict Risk
                         </button>
                     </div>
                 </form>
@@ -688,60 +692,60 @@
                         <div class="result-header" id="resultHeader">
                             <div class="result-icon" id="resultIcon">✅</div>
                             <div class="result-title">
-                                <h3 id="resultTitle">预测结果</h3>
-                                <p id="resultSubtitle">Prediction Result</p>
+                                <h3 id="resultTitle">Prediction Result</h3>
+                                <p id="resultSubtitle">Risk Assessment Complete</p>
                             </div>
                         </div>
                         <div class="result-body">
                             <div class="probability-display">
                                 <div class="probability-circle" id="probabilityCircle">
                                     <div class="probability-value" id="probabilityValue">0%</div>
-                                    <div class="probability-label">肺转移概率</div>
+                                    <div class="probability-label">Metastasis Probability</div>
                                 </div>
                             </div>
 
                             <div class="result-details">
                                 <div class="detail-item">
-                                    <h4>风险等级</h4>
+                                    <h4>Risk Level</h4>
                                     <p id="riskLevelText">-</p>
                                 </div>
                                 <div class="detail-item">
-                                    <h4>预测分类</h4>
+                                    <h4>Prediction Class</h4>
                                     <p id="predictionClass">-</p>
                                 </div>
                                 <div class="detail-item">
-                                    <h4>决策阈值</h4>
+                                    <h4>Decision Threshold</h4>
                                     <p id="thresholdValue">-</p>
                                 </div>
                                 <div class="detail-item">
-                                    <h4>模型置信度</h4>
+                                    <h4>Model Confidence</h4>
                                     <p id="confidenceValue">-</p>
                                 </div>
                             </div>
 
                             <div class="clinical-advice">
-                                <h4>📋 临床建议</h4>
+                                <h4>📋 Clinical Recommendations</h4>
                                 <p id="clinicalAdvice">-</p>
                             </div>
 
                             <button type="button" class="new-prediction-btn" onclick="resetForm()">
-                                🔄 进行新的预测
+                                🔄 New Prediction
                             </button>
                         </div>
                     </div>
                 </div>
 
                 <div class="disclaimer">
-                    <h4>⚠️ 免责声明 (Disclaimer)</h4>
-                    <p>本预测系统基于SEER数据库训练的随机森林机器学习模型，仅供临床参考使用。预测结果不能替代专业医生的诊断和治疗决策。请结合患者的具体临床情况、影像学检查结果和实验室指标进行综合判断。模型性能可能因患者群体差异而有所不同。如有疑问，请咨询专业医疗人员。</p>
+                    <h4>⚠️ Disclaimer</h4>
+                    <p>This prediction system is based on a Random Forest machine learning model trained on the SEER database and is intended for clinical reference only. The prediction results cannot replace professional medical diagnosis and treatment decisions. Please consider the patient's specific clinical situation, imaging findings, and laboratory results for comprehensive evaluation. Model performance may vary across different patient populations. Consult healthcare professionals if you have any questions.</p>
                 </div>
             </div>
         </div>
 
         <div class="footer">
-            <p>© 2024 食管癌肺转移风险预测系统 | 基于 SEER 数据库 | 
-               <a href="/model_info" target="_blank">模型信息</a> | 
-               <a href="/health" target="_blank">服务状态</a>
+            <p>© 2024 Esophageal Cancer Lung Metastasis Risk Prediction System | Based on SEER Database | 
+               <a href="/model_info" target="_blank">Model Info</a> | 
+               <a href="/health" target="_blank">Service Status</a>
             </p>
         </div>
     </div>
@@ -749,20 +753,20 @@
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-content">
             <div class="loading-spinner"></div>
-            <p>正在使用随机森林模型进行预测分析...</p>
+            <p>Analyzing with Random Forest model...</p>
         </div>
     </div>
 
     <script>
-        // API基础URL（同源部署时使用相对路径）
+        // API Base URL (use relative path for same-origin deployment)
         const API_BASE_URL = '';
 
-        // 页面加载时检查API状态
+        // Check API status on page load
         document.addEventListener('DOMContentLoaded', function() {
             checkApiStatus();
         });
 
-        // 检查API状态
+        // Check API status
         async function checkApiStatus() {
             const statusEl = document.getElementById('apiStatus');
             
@@ -777,7 +781,7 @@
                     statusEl.className = 'api-status success';
                     statusEl.innerHTML = `
                         <div class="status-dot"></div>
-                        <span>✓ 模型服务运行正常 | 阈值: ${(data.threshold * 100).toFixed(1)}%</span>
+                        <span>✓ Model service running | Threshold: ${(data.threshold * 100).toFixed(1)}%</span>
                     `;
                     document.getElementById('submitBtn').disabled = false;
                 } else {
@@ -788,13 +792,13 @@
                 statusEl.className = 'api-status error';
                 statusEl.innerHTML = `
                     <div class="status-dot"></div>
-                    <span>✗ 模型服务连接失败，请刷新页面重试</span>
+                    <span>✗ Model service connection failed. Please refresh the page.</span>
                 `;
                 document.getElementById('submitBtn').disabled = false;
             }
         }
 
-        // 表单提交处理
+        // Form submission handler
         document.getElementById('predictionForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -803,7 +807,7 @@
             const errorMessage = document.getElementById('errorMessage');
             const resultSection = document.getElementById('resultSection');
             
-            // 收集表单数据
+            // Collect form data
             const formData = {
                 race: document.getElementById('race').value,
                 sex: document.getElementById('sex').value,
@@ -815,15 +819,15 @@
                 histology: document.getElementById('histology').value
             };
             
-            // 验证所有字段
+            // Validate all fields
             for (let key in formData) {
                 if (!formData[key]) {
-                    showError('请填写所有必填字段后再进行预测');
+                    showError('Please complete all required fields before prediction.');
                     return;
                 }
             }
             
-            // 显示加载状态
+            // Show loading state
             loadingOverlay.classList.add('show');
             errorMessage.classList.remove('show');
             resultSection.classList.remove('show');
@@ -841,55 +845,63 @@
                 
                 const result = await response.json();
                 
-                if (response.ok) {
+                if (response.ok && result.success) {
                     displayResult(result);
                 } else {
-                    showError(result.error || '预测失败，请检查输入数据后重试');
+                    showError(result.error || 'Prediction failed. Please check input data and try again.');
                 }
             } catch (error) {
                 console.error('Prediction error:', error);
-                showError('网络错误：无法连接到预测服务器。请检查网络连接后重试。');
+                showError('Network error: Unable to connect to prediction server. Please check your connection.');
             } finally {
                 loadingOverlay.classList.remove('show');
                 submitBtn.disabled = false;
             }
         });
 
-        // 显示预测结果
+        // Display prediction result
         function displayResult(result) {
             const resultSection = document.getElementById('resultSection');
             const resultHeader = document.getElementById('resultHeader');
-            const probability = result.probability;
+            
+            // Handle probability - check if it's an object or number
+            let probability;
+            if (typeof result.probability === 'object') {
+                probability = result.probability.positive / 100;
+            } else {
+                probability = result.probability;
+            }
+            
             const riskLevel = result.risk_level;
             
-            // 设置风险等级样式
+            // Set risk level style
             resultHeader.className = 'result-header ' + riskLevel;
             
-            // 风险等级配置
+            // Risk level configuration
             const riskConfig = {
                 low: {
                     icon: '✅',
-                    title: '低风险 (Low Risk)',
-                    subtitle: '肺转移风险较低，建议常规随访',
+                    title: 'Low Risk',
+                    subtitle: 'Low probability of lung metastasis. Routine follow-up recommended.',
                     color: '#48bb78',
-                    levelText: '低风险',
-                    advice: '患者肺转移风险较低。建议按常规随访计划进行定期复查，包括每6个月进行一次胸部X线或CT检查。保持健康生活方式，戒烟限酒，均衡饮食，适度运动。注意观察呼吸系统相关症状，如出现持续咳嗽、胸痛或呼吸困难，应及时就医。'
+                    levelText: 'Low Risk',
+                    advice: 'The patient has a low risk of lung metastasis. Recommended: (1) Follow routine surveillance schedule with chest X-ray or CT every 6 months; (2) Maintain healthy lifestyle including smoking cessation, moderate alcohol consumption, balanced diet, and regular exercise; (3) Monitor for respiratory symptoms such as persistent cough, chest pain, or shortness of breath; (4) Seek medical attention promptly if any concerning symptoms develop.'
                 },
                 medium: {
                     icon: '⚠️',
-                    title: '中等风险 (Medium Risk)',
-                    subtitle: '需要密切关注，建议加强监测',
+                    title: 'Medium Risk',
+                    subtitle: 'Moderate risk detected. Enhanced monitoring advised.',
                     color: '#ed8936',
-                    levelText: '中等风险',
-                    advice: '患者存在中等程度的肺转移风险，需要引起重视。建议：(1) 增加随访频率至每3个月一次；(2) 进行胸部增强CT检查以排除早期肺转移病灶；(3) 定期检测肿瘤标志物（如CEA、SCC等）变化趋势；(4) 密切关注咳嗽、胸痛、呼吸困难、咯血等症状；(5) 必要时可考虑多学科团队（MDT）会诊，评估是否需要调整治疗方案。'
+                    levelText: 'Medium Risk',
+                    advice: 'The patient has a moderate risk of lung metastasis requiring attention. Recommendations: (1) Increase follow-up frequency to every 3 months; (2) Perform contrast-enhanced chest CT to rule out early lung metastases; (3) Monitor tumor markers (e.g., CEA, SCC) trends regularly; (4) Watch closely for symptoms including cough, chest pain, dyspnea, or hemoptysis; (5) Consider multidisciplinary team (MDT) consultation to evaluate treatment plan adjustments if needed.'
                 },
                 high: {
                     icon: '🚨',
-                    title: '高风险 (High Risk)',
-                    subtitle: '风险较高，建议立即进一步检查',
+                    title: 'High Risk',
+                    subtitle: 'Elevated risk level. Immediate further evaluation recommended.',
                     color: '#e53e3e',
-                    levelText: '高风险',
-                    advice: '患者肺转移风险较高，需要高度重视并积极干预。强烈建议：(1) 立即进行全面的影像学评估，包括胸部增强CT或PET-CT检查；(2) 组织多学科团队（MDT）会诊，包括胸外科、肿瘤内科、放疗科、影像科等专家；(3) 重新评估肿瘤分期和治疗方案，考虑是否需要系统性治疗；(4) 每1-2个月进行密切随访和影像学复查；(5) 加强营养支持和心理疏导；(6) 与患者及家属充分沟通病情和治疗选择。'
+                    levelText: 'High Risk',
+                    advice: 'The patient has a high risk of lung metastasis requiring urgent attention and intervention. Strong recommendations: (1) Immediate comprehensive imaging evaluation including contrast-enhanced chest CT or PET-CT; (2) Organize multidisciplinary team (MDT) consultation involving thoracic surgery, medical oncology, radiation oncology, and radiology; (3) Re-evaluate tumor staging and treatment strategy, consider systemic therapy; (4) Schedule close follow-up with imaging every 1-2 months; (5) Provide nutritional support and psychological counseling; (6) Thoroughly discuss prognosis and treatment options with patient and family.'
                 }
             };
             
@@ -899,35 +911,49 @@
             document.getElementById('resultTitle').textContent = config.title;
             document.getElementById('resultSubtitle').textContent = config.subtitle;
             
-            // 设置概率显示
+            // Set probability display
             const probabilityPercent = (probability * 100).toFixed(1);
             document.getElementById('probabilityValue').textContent = probabilityPercent + '%';
             
-            // 设置圆圈颜色
+            // Set circle color
             const circle = document.getElementById('probabilityCircle');
             circle.style.borderColor = config.color;
             circle.style.color = config.color;
             
-            // 设置详细信息
+            // Set detailed information
             document.getElementById('riskLevelText').textContent = config.levelText;
             document.getElementById('predictionClass').textContent = 
-                result.prediction === 1 ? '阳性 (可能转移)' : '阴性 (可能无转移)';
-            document.getElementById('thresholdValue').textContent = 
-                (result.threshold * 100).toFixed(1) + '%';
-            document.getElementById('confidenceValue').textContent = 
-                (result.confidence * 100).toFixed(1) + '%';
+                result.prediction === 1 ? 'Positive (Likely Metastasis)' : 'Negative (Unlikely Metastasis)';
             
-            // 设置临床建议
+            // Handle threshold display
+            let thresholdValue;
+            if (typeof result.threshold === 'number') {
+                thresholdValue = result.threshold > 1 ? result.threshold : result.threshold * 100;
+            } else {
+                thresholdValue = 50;
+            }
+            document.getElementById('thresholdValue').textContent = thresholdValue.toFixed(1) + '%';
+            
+            // Handle confidence display
+            let confidenceValue;
+            if (typeof result.confidence === 'number') {
+                confidenceValue = result.confidence > 1 ? result.confidence : result.confidence * 100;
+            } else {
+                confidenceValue = Math.max(probability * 100, (1 - probability) * 100);
+            }
+            document.getElementById('confidenceValue').textContent = confidenceValue.toFixed(1) + '%';
+            
+            // Set clinical advice
             document.getElementById('clinicalAdvice').textContent = config.advice;
             
-            // 显示结果区域并滚动到可见位置
+            // Show result section and scroll into view
             resultSection.classList.add('show');
             setTimeout(() => {
                 resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
         }
 
-        // 显示错误信息
+        // Show error message
         function showError(message) {
             const errorEl = document.getElementById('errorMessage');
             errorEl.textContent = message;
@@ -935,7 +961,7 @@
             errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
-        // 重置表单
+        // Reset form
         function resetForm() {
             document.getElementById('predictionForm').reset();
             document.getElementById('resultSection').classList.remove('show');
