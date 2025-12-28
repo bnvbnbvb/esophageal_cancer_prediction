@@ -26,67 +26,6 @@ def convert_to_python_type(obj):
         return obj
 
 
-# ============ 值映射：前端显示值 -> 编码器数字字符串 ============
-VALUE_MAPPING = {
-    'Race': {
-        'White': '0',
-        'Black': '1',
-        'Other': '2'
-        # 注意：编码器有 0,1,2,3 四个值，如果有第四个种族类别需要添加
-    },
-    'Sex': {
-        'Male': '0',
-        'Female': '1'
-    },
-    'Primary site': {
-        'Upper third': '0',
-        'Middle third': '1',
-        'Lower third': '2',
-        'Overlapping': '3'
-        # 注意：编码器有 0,1,2,3,4 五个值，如果有第五个部位需要添加
-    },
-    'T stage': {
-        'T1': '0',
-        'T2': '1',
-        'T3': '2',
-        'T4': '3'
-    },
-    'N stage': {
-        'N0': '0',
-        'N1': '1',
-        'N2': '2',
-        'N3': '3'
-    },
-    'Grade': {
-        'Grade I': '0',
-        'Grade II': '1',
-        'Grade III': '2',
-        'Grade IV': '3'
-    },
-    'Age_Reclassified': {
-        '<50': '0',
-        '50-59': '1',
-        '60-69': '2',
-        '70-79': '3'
-        # 注意：你的 FEATURE_OPTIONS 有 '>=80'，但编码器只有 0,1,2,3
-        # 如果需要 >=80，可能要检查原始数据
-    },
-    'Histology': {
-        'Adenocarcinoma': '0',
-        'Squamous cell carcinoma': '1',
-        'Other': '2'
-        # 注意：编码器有 0,1,2,3 四个值，如果有第四个组织学类型需要添加
-    }
-}
-
-
-def map_input_value(col, value):
-    """将前端值映射到编码器期望的值"""
-    if col in VALUE_MAPPING and value in VALUE_MAPPING[col]:
-        return VALUE_MAPPING[col][value]
-    return value
-
-
 # ============ 加载模型和配置文件 ============
 print("正在加载模型文件...")
 
@@ -100,6 +39,9 @@ except Exception as e:
 try:
     encoders = joblib.load('label_encoders.pkl')
     print("✓ 编码器加载成功")
+    # 打印每个编码器的类别，用于调试
+    for col, le in encoders.items():
+        print(f"  {col}: {list(le.classes_)}")
 except Exception as e:
     print(f"✗ 编码器加载失败: {e}")
     encoders = {}
@@ -120,16 +62,46 @@ except Exception as e:
     print(f"✗ 阈值加载失败，使用默认值0.5: {e}")
     optimal_threshold = 0.5
 
-# ============ 特征选项定义（前端显示用）============
+
+# ============ 特征选项定义（基于原始SEER数据）============
 FEATURE_OPTIONS = {
-    'Race': ['White', 'Black', 'Other'],
+    'Race': [
+        'White',
+        'Black',
+        'Asian or Pacific Islander',
+        'American Indian/Alaska Native'
+    ],
     'Sex': ['Male', 'Female'],
-    'Primary site': ['Upper third', 'Middle third', 'Lower third', 'Overlapping'],
+    'Primary site': [
+        'Cervical esophagus',
+        'Upper third of esophagus',
+        'Middle third of esophagus',
+        'Lower third of esophagus',
+        'Abdominal esophagus',
+        'Overlapping lesion of esophagus'
+    ],
     'T stage': ['T1', 'T2', 'T3', 'T4'],
     'N stage': ['N0', 'N1', 'N2', 'N3'],
-    'Grade': ['Grade I', 'Grade II', 'Grade III', 'Grade IV'],
-    'Age_Reclassified': ['<50', '50-59', '60-69', '70-79'],
-    'Histology': ['Adenocarcinoma', 'Squamous cell carcinoma', 'Other']
+    'Grade': [
+        'Well differentiated; Grade I',
+        'Moderately differentiated; Grade II',
+        'Poorly differentiated; Grade III',
+        'Undifferentiated; anaplastic; Grade IV'
+    ],
+    'Age_Reclassified': ['<50', '50-60', '60-70', '70-80', '≥80'],
+    'histology': ['Squamous Cell Carcinoma', 'Adenocarcinoma', 'Neuroendocrine Carcinoma', 'Other Carcinoma']
+}
+
+# 中文标签映射
+CHINESE_LABELS = {
+    'Race': '种族',
+    'Sex': '性别',
+    'Primary site': '原发部位',
+    'T stage': 'T分期',
+    'N stage': 'N分期',
+    'Grade': '分化程度',
+    'Age_Reclassified': '年龄分组',
+    'Histology': '组织学类型'
 }
 
 
@@ -152,6 +124,16 @@ def health():
     })
 
 
+@app.route('/api/options', methods=['GET'])
+def get_options():
+    """返回所有特征的选项"""
+    return jsonify({
+        'feature_options': FEATURE_OPTIONS,
+        'chinese_labels': CHINESE_LABELS,
+        'feature_order': feature_names
+    })
+
+
 @app.route('/model_info', methods=['GET'])
 def model_info():
     """获取模型信息"""
@@ -159,6 +141,7 @@ def model_info():
         'features': [str(f) for f in feature_names],
         'threshold': float(optimal_threshold),
         'feature_options': FEATURE_OPTIONS,
+        'chinese_labels': CHINESE_LABELS,
         'model_type': 'Random Forest Classifier',
         'description': '基于SEER数据库的食管癌肺转移预测模型'
     })
@@ -172,54 +155,101 @@ def predict():
 
     try:
         data = request.json
+        print(f"收到的原始数据: {data}")
 
-        # 验证输入数据
-        required_fields = ['race', 'sex', 'primarySite', 'tStage', 'nStage', 'grade', 'age', 'histology']
-        for field in required_fields:
-            if field not in data or not data[field]:
-                return jsonify({'error': f'缺少必填字段: {field}'}), 400
+        # 字段映射：前端字段名 -> 模型特征名
+        field_mapping = {
+            'race': 'Race',
+            'sex': 'Sex',
+            'primarySite': 'Primary site',
+            'tStage': 'T stage',
+            'nStage': 'N stage',
+            'grade': 'Grade',
+            'age': 'Age_Reclassified',
+            'histology': 'Histology',
+            # 也支持直接使用模型特征名
+            'Race': 'Race',
+            'Sex': 'Sex',
+            'Primary site': 'Primary site',
+            'T stage': 'T stage',
+            'N stage': 'N stage',
+            'Grade': 'Grade',
+            'Age_Reclassified': 'Age_Reclassified',
+            'Histology': 'Histology'
+        }
 
-        # 创建输入数据框，进行值映射并直接转为整数
-        input_data = pd.DataFrame([{
-            'Race': int(map_input_value('Race', data['race'])),
-            'Sex': int(map_input_value('Sex', data['sex'])),
-            'Primary site': int(map_input_value('Primary site', data['primarySite'])),
-            'T stage': int(map_input_value('T stage', data['tStage'])),
-            'N stage': int(map_input_value('N stage', data['nStage'])),
-            'Grade': int(map_input_value('Grade', data['grade'])),
-            'Age_Reclassified': int(map_input_value('Age_Reclassified', data['age'])),
-            'Histology': int(map_input_value('Histology', data['histology']))
-        }])
+        # 构建输入数据字典
+        input_dict = {}
+        for front_key, model_key in field_mapping.items():
+            if front_key in data and data[front_key]:
+                input_dict[model_key] = data[front_key]
 
-        print(f"输入数据: {input_data.to_dict()}")
+        # 验证是否有所有必需的特征
+        missing_fields = [f for f in feature_names if f not in input_dict]
+        if missing_fields:
+            return jsonify({
+                'error': f'缺少必填字段: {", ".join(missing_fields)}',
+                'received_fields': list(input_dict.keys()),
+                'required_fields': feature_names
+            }), 400
+
+        # 创建 DataFrame
+        input_data = pd.DataFrame([input_dict])
+        print(f"转换后的输入数据: {input_data.to_dict()}")
+
+        # 使用编码器进行标签编码
+        for col in feature_names:
+            if col in encoders:
+                le = encoders[col]
+                value = input_data[col].values[0]
+                
+                # 检查值是否在编码器的已知类别中
+                if value not in le.classes_:
+                    return jsonify({
+                        'error': f'"{col}" 的值 "{value}" 无效',
+                        'valid_options': list(le.classes_)
+                    }), 400
+                
+                input_data[col] = le.transform(input_data[col])
+                print(f"  {col}: '{value}' -> {input_data[col].values[0]}")
 
         # 确保特征顺序与训练时一致
-        try:
-            input_data = input_data[feature_names]
-        except KeyError as e:
-            return jsonify({'error': f'特征名称不匹配: {e}'}), 400
+        input_data = input_data[feature_names]
+        print(f"最终输入特征: {input_data.values}")
 
-        # 进行预测（不再需要编码器转换）
+        # 进行预测
         prob_array = model.predict_proba(input_data)[0]
-        probability = float(prob_array[1])
-        prediction = 1 if probability >= optimal_threshold else 0
+        prob_negative = float(prob_array[0])
+        prob_positive = float(prob_array[1])
+        prediction = 1 if prob_positive >= optimal_threshold else 0
 
         # 确定风险等级
-        if probability < 0.1:
+        if prob_positive < 0.2:
             risk_level = 'low'
-        elif probability < 0.3:
+            risk_level_cn = '低风险'
+            risk_color = 'green'
+        elif prob_positive < 0.5:
             risk_level = 'medium'
+            risk_level_cn = '中风险'
+            risk_color = 'orange'
         else:
             risk_level = 'high'
-
-        confidence = float(max(probability, 1.0 - probability))
+            risk_level_cn = '高风险'
+            risk_color = 'red'
 
         result = {
-            'probability': float(probability),
+            'success': True,
+            'probability': {
+                'positive': round(prob_positive * 100, 2),
+                'negative': round(prob_negative * 100, 2)
+            },
             'prediction': int(prediction),
-            'threshold': float(optimal_threshold),
+            'threshold': round(float(optimal_threshold) * 100, 2),
             'risk_level': str(risk_level),
-            'confidence': float(confidence),
+            'risk_level_cn': str(risk_level_cn),
+            'risk_color': str(risk_color),
+            'confidence': round(float(max(prob_positive, prob_negative)) * 100, 2),
+            'interpretation': f'该患者肺转移概率为 {round(prob_positive * 100, 2)}%，属于{risk_level_cn}。',
             'message': '预测成功'
         }
 
@@ -231,7 +261,10 @@ def predict():
         import traceback
         error_trace = traceback.format_exc()
         print(f"预测错误: {error_trace}")
-        return jsonify({'error': f'预测过程中发生错误: {str(e)}'}), 500
+        return jsonify({
+            'success': False,
+            'error': f'预测过程中发生错误: {str(e)}'
+        }), 500
 
 
 @app.route('/batch_predict', methods=['POST'])
@@ -247,25 +280,37 @@ def batch_predict():
         if not patients:
             return jsonify({'error': '没有提供患者数据'}), 400
 
+        field_mapping = {
+            'race': 'Race',
+            'sex': 'Sex',
+            'primarySite': 'Primary site',
+            'tStage': 'T stage',
+            'nStage': 'N stage',
+            'grade': 'Grade',
+            'age': 'Age_Reclassified',
+            'histology': 'Histology'
+        }
+
         results = []
         for i, patient in enumerate(patients):
             try:
-                input_data = pd.DataFrame([{
-                    'Race': map_input_value('Race', patient['race']),
-                    'Sex': map_input_value('Sex', patient['sex']),
-                    'Primary site': map_input_value('Primary site', patient['primarySite']),
-                    'T stage': map_input_value('T stage', patient['tStage']),
-                    'N stage': map_input_value('N stage', patient['nStage']),
-                    'Grade': map_input_value('Grade', patient['grade']),
-                    'Age_Reclassified': map_input_value('Age_Reclassified', patient['age']),
-                    'Histology': map_input_value('Histology', patient['histology'])
-                }])
+                # 构建输入数据
+                input_dict = {}
+                for front_key, model_key in field_mapping.items():
+                    if front_key in patient:
+                        input_dict[model_key] = patient[front_key]
 
-                for col in input_data.columns:
+                input_data = pd.DataFrame([input_dict])
+
+                # 编码
+                for col in feature_names:
                     if col in encoders:
                         le = encoders[col]
-                        if input_data[col].values[0] in le.classes_:
+                        value = input_data[col].values[0]
+                        if value in le.classes_:
                             input_data[col] = le.transform(input_data[col])
+                        else:
+                            raise ValueError(f'"{col}" 的值 "{value}" 无效')
 
                 input_data = input_data[feature_names]
                 prob_array = model.predict_proba(input_data)[0]
@@ -273,7 +318,7 @@ def batch_predict():
 
                 results.append({
                     'index': int(i),
-                    'probability': float(probability),
+                    'probability': round(probability * 100, 2),
                     'prediction': int(1 if probability >= optimal_threshold else 0),
                     'success': True
                 })
@@ -303,6 +348,10 @@ def internal_error(error):
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
-    print(f"启动服务器，端口: {port}, 调试模式: {debug}")
+    debug = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
+    print(f"\n{'='*50}")
+    print(f"启动食管癌肺转移预测服务器")
+    print(f"端口: {port}")
+    print(f"调试模式: {debug}")
+    print(f"{'='*50}\n")
     app.run(host='0.0.0.0', port=port, debug=debug)
