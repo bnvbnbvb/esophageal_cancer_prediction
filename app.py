@@ -8,6 +8,22 @@ import os
 app = Flask(__name__)
 CORS(app)
 
+# ============ 辅助函数：转换 NumPy 类型 ============
+def convert_to_python_type(obj):
+    """将 NumPy 类型转换为 Python 原生类型"""
+    if isinstance(obj, (np.integer, np.int64, np.int32)):
+        return int(obj)
+    elif isinstance(obj, (np.floating, np.float64, np.float32)):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, dict):
+        return {k: convert_to_python_type(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_to_python_type(i) for i in obj]
+    else:
+        return obj
+
 # ============ 加载模型和配置文件 ============
 print("正在加载模型文件...")
 
@@ -27,6 +43,8 @@ except Exception as e:
 
 try:
     feature_names = joblib.load('feature_names.pkl')
+    # 确保是普通 Python 字符串列表
+    feature_names = [str(f) for f in feature_names]
     print("✓ 特征名称加载成功")
 except Exception as e:
     print(f"✗ 特征名称加载失败: {e}")
@@ -34,6 +52,8 @@ except Exception as e:
 
 try:
     optimal_threshold = joblib.load('optimal_threshold.pkl')
+    # 确保是 Python float
+    optimal_threshold = float(optimal_threshold)
     print(f"✓ 最佳阈值加载成功: {optimal_threshold}")
 except Exception as e:
     print(f"✗ 阈值加载失败，使用默认值0.5: {e}")
@@ -66,7 +86,7 @@ def health():
         'status': 'healthy',
         'model_loaded': model is not None,
         'encoders_loaded': len(encoders) > 0,
-        'threshold': float(optimal_threshold) if optimal_threshold else 0.5
+        'threshold': float(optimal_threshold)
     })
 
 
@@ -74,7 +94,7 @@ def health():
 def model_info():
     """获取模型信息"""
     return jsonify({
-        'features': feature_names,
+        'features': [str(f) for f in feature_names],
         'threshold': float(optimal_threshold),
         'feature_options': FEATURE_OPTIONS,
         'model_type': 'Random Forest Classifier',
@@ -121,12 +141,11 @@ def predict():
                 if value in le.classes_:
                     input_data[col] = le.transform(input_data[col])
                 else:
-                    # 尝试查找相似的类别
                     print(f"警告: '{value}' 不在 {col} 的已知类别中")
                     print(f"已知类别: {list(le.classes_)}")
                     return jsonify({
                         'error': f"未知的{col}值: {value}",
-                        'valid_options': list(le.classes_)
+                        'valid_options': [str(c) for c in le.classes_]
                     }), 400
             else:
                 print(f"警告: 列 {col} 没有对应的编码器")
@@ -140,8 +159,9 @@ def predict():
         print(f"编码后的输入数据: {input_data.to_dict()}")
 
         # 进行预测
-        probability = float(model.predict_proba(input_data)[0][1])
-        prediction = 1 if probability >= float(optimal_threshold) else 0
+        prob_array = model.predict_proba(input_data)[0]
+        probability = float(prob_array[1])
+        prediction = 1 if probability >= optimal_threshold else 0
 
         # 确定风险等级
         if probability < 0.1:
@@ -152,16 +172,20 @@ def predict():
             risk_level = 'high'
 
         # 计算置信度
-        confidence = max(probability, 1 - probability)
+        confidence = float(max(probability, 1.0 - probability))
 
         result = {
-            'probability': probability,
-            'prediction': prediction,
+            'probability': float(probability),
+            'prediction': int(prediction),
             'threshold': float(optimal_threshold),
-            'risk_level': risk_level,
-            'confidence': confidence,
+            'risk_level': str(risk_level),
+            'confidence': float(confidence),
             'message': '预测成功'
         }
+        
+        # 额外保险：转换所有值
+        result = convert_to_python_type(result)
+        
         print(f"预测结果: {result}")
         return jsonify(result)
         
@@ -206,21 +230,24 @@ def batch_predict():
                             input_data[col] = le.transform(input_data[col])
 
                 input_data = input_data[feature_names]
-                probability = float(model.predict_proba(input_data)[0][1])  # 加 float()
+                prob_array = model.predict_proba(input_data)[0]
+                probability = float(prob_array[1])
 
                 results.append({
-                    'index': int(i),  # 加 int()
-                    'probability': probability,
-                    'prediction': 1 if probability >= float(optimal_threshold) else 0,  # 加 float()
+                    'index': int(i),
+                    'probability': float(probability),
+                    'prediction': int(1 if probability >= optimal_threshold else 0),
                     'success': True
                 })
             except Exception as e:
                 results.append({
-                    'index': int(i),  # 加 int()
+                    'index': int(i),
                     'error': str(e),
                     'success': False
                 })
 
+        # 额外保险：转换所有值
+        results = convert_to_python_type(results)
         return jsonify({'results': results})
 
     except Exception as e:
