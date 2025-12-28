@@ -179,37 +179,19 @@ def predict():
             if field not in data or not data[field]:
                 return jsonify({'error': f'缺少必填字段: {field}'}), 400
 
-        # 创建输入数据框，同时进行值映射
+        # 创建输入数据框，进行值映射并直接转为整数
         input_data = pd.DataFrame([{
-            'Race': map_input_value('Race', data['race']),
-            'Sex': map_input_value('Sex', data['sex']),
-            'Primary site': map_input_value('Primary site', data['primarySite']),
-            'T stage': map_input_value('T stage', data['tStage']),
-            'N stage': map_input_value('N stage', data['nStage']),
-            'Grade': map_input_value('Grade', data['grade']),
-            'Age_Reclassified': map_input_value('Age_Reclassified', data['age']),
-            'Histology': map_input_value('Histology', data['histology'])
+            'Race': int(map_input_value('Race', data['race'])),
+            'Sex': int(map_input_value('Sex', data['sex'])),
+            'Primary site': int(map_input_value('Primary site', data['primarySite'])),
+            'T stage': int(map_input_value('T stage', data['tStage'])),
+            'N stage': int(map_input_value('N stage', data['nStage'])),
+            'Grade': int(map_input_value('Grade', data['grade'])),
+            'Age_Reclassified': int(map_input_value('Age_Reclassified', data['age'])),
+            'Histology': int(map_input_value('Histology', data['histology']))
         }])
 
-        print(f"映射后的输入数据: {input_data.to_dict()}")
-
-        # 对每个特征进行标签编码
-        for col in input_data.columns:
-            if col in encoders:
-                le = encoders[col]
-                value = input_data[col].values[0]
-
-                if value in le.classes_:
-                    input_data[col] = le.transform(input_data[col])
-                else:
-                    print(f"警告: '{value}' 不在 {col} 的已知类别中")
-                    print(f"已知类别: {list(le.classes_)}")
-                    return jsonify({
-                        'error': f"未知的{col}值: {value}",
-                        'valid_options': [str(c) for c in le.classes_]
-                    }), 400
-            else:
-                print(f"警告: 列 {col} 没有对应的编码器")
+        print(f"输入数据: {input_data.to_dict()}")
 
         # 确保特征顺序与训练时一致
         try:
@@ -217,9 +199,7 @@ def predict():
         except KeyError as e:
             return jsonify({'error': f'特征名称不匹配: {e}'}), 400
 
-        print(f"编码后的输入数据: {input_data.to_dict()}")
-
-        # 进行预测
+        # 进行预测（不再需要编码器转换）
         prob_array = model.predict_proba(input_data)[0]
         probability = float(prob_array[1])
         prediction = 1 if probability >= optimal_threshold else 0
