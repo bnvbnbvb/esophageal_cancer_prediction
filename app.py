@@ -26,6 +26,59 @@ def convert_to_python_type(obj):
         return obj
 
 
+# ============ 手动编码映射（替代 label_encoders.pkl）============
+MANUAL_ENCODERS = {
+    'Race': {
+        'American Indian/Alaska Native': 0,
+        'Asian or Pacific Islander': 1,
+        'Black': 2,
+        'White': 3,
+    },
+    'Sex': {
+        'Female': 0,
+        'Male': 1,
+    },
+    'Primary site': {
+        'Abdominal/overlapping esophagus': 0,
+        'Cervical esophagus': 1,
+        'Lower third of esophagus': 2,
+        'Middle third of esophagus': 3,
+        'Upper third of esophagus': 4,
+    },
+    'T stage': {
+        'T1': 0,
+        'T2': 1,
+        'T3': 2,
+        'T4': 3,
+    },
+    'N stage': {
+        'N0': 0,
+        'N1': 1,
+        'N2': 2,
+        'N3': 3,
+    },
+    'Grade': {
+        'Moderately differentiated; Grade II': 0,
+        'Poorly differentiated; Grade III': 1,
+        'Undifferentiated; anaplastic; Grade IV': 2,
+        'Well differentiated; Grade I': 3,
+    },
+    'Age_Reclassified': {
+        '<50': 0,
+        '50-60': 1,
+        '60-70': 2,
+        '70-80': 3,
+        '≥80': 4,
+    },
+    'Histology': {
+        'Adenocarcinoma': 0,
+        'Neuroendocrine Carcinoma': 1,
+        'Other Carcinoma': 2,
+        'Squamous Cell Carcinoma': 3,
+    },
+}
+
+
 # ============ 加载模型和配置文件 ============
 print("正在加载模型文件...")
 
@@ -35,16 +88,6 @@ try:
 except Exception as e:
     print(f"✗ 模型加载失败: {e}")
     model = None
-
-try:
-    encoders = joblib.load('label_encoders.pkl')
-    print("✓ 编码器加载成功")
-    # 打印每个编码器的类别，用于调试
-    for col, le in encoders.items():
-        print(f"  {col}: {list(le.classes_)}")
-except Exception as e:
-    print(f"✗ 编码器加载失败: {e}")
-    encoders = {}
 
 try:
     feature_names = joblib.load('feature_names.pkl')
@@ -62,23 +105,19 @@ except Exception as e:
     print(f"✗ 阈值加载失败，使用默认值0.5: {e}")
     optimal_threshold = 0.5
 
+print("✓ 使用手动编码映射")
 
-# ============ 特征选项定义（基于原始SEER数据）============
+
+# ============ 特征选项定义（基于 MANUAL_ENCODERS 的键）============
 FEATURE_OPTIONS = {
-    'Race': [
-        'White',
-        'Black',
-        'Asian or Pacific Islander',
-        'American Indian/Alaska Native'
-    ],
+    'Race': ['White', 'Black', 'Asian or Pacific Islander', 'American Indian/Alaska Native'],
     'Sex': ['Male', 'Female'],
     'Primary site': [
         'Cervical esophagus',
         'Upper third of esophagus',
         'Middle third of esophagus',
         'Lower third of esophagus',
-        'Abdominal esophagus',
-        'Overlapping lesion of esophagus'
+        'Abdominal/overlapping esophagus'
     ],
     'T stage': ['T1', 'T2', 'T3', 'T4'],
     'N stage': ['N0', 'N1', 'N2', 'N3'],
@@ -119,7 +158,7 @@ def health():
     return jsonify({
         'status': 'healthy',
         'model_loaded': model is not None,
-        'encoders_loaded': len(encoders) > 0,
+        'encoders_loaded': True,
         'threshold': float(optimal_threshold)
     })
 
@@ -197,21 +236,21 @@ def predict():
         input_data = pd.DataFrame([input_dict])
         print(f"转换后的输入数据: {input_data.to_dict()}")
 
-        # 使用编码器进行标签编码
+        # 使用手动编码映射进行标签编码
         for col in feature_names:
-            if col in encoders:
-                le = encoders[col]
+            if col in MANUAL_ENCODERS:
                 value = input_data[col].values[0]
                 
                 # 检查值是否在编码器的已知类别中
-                if value not in le.classes_:
+                if value not in MANUAL_ENCODERS[col]:
                     return jsonify({
                         'error': f'"{col}" 的值 "{value}" 无效',
-                        'valid_options': list(le.classes_)
+                        'valid_options': list(MANUAL_ENCODERS[col].keys())
                     }), 400
                 
-                input_data[col] = le.transform(input_data[col])
-                print(f"  {col}: '{value}' -> {input_data[col].values[0]}")
+                encoded_value = MANUAL_ENCODERS[col][value]
+                input_data[col] = encoded_value
+                print(f"  {col}: '{value}' -> {encoded_value}")
 
         # 确保特征顺序与训练时一致
         input_data = input_data[feature_names]
@@ -302,13 +341,12 @@ def batch_predict():
 
                 input_data = pd.DataFrame([input_dict])
 
-                # 编码
+                # 使用手动编码映射
                 for col in feature_names:
-                    if col in encoders:
-                        le = encoders[col]
+                    if col in MANUAL_ENCODERS:
                         value = input_data[col].values[0]
-                        if value in le.classes_:
-                            input_data[col] = le.transform(input_data[col])
+                        if value in MANUAL_ENCODERS[col]:
+                            input_data[col] = MANUAL_ENCODERS[col][value]
                         else:
                             raise ValueError(f'"{col}" 的值 "{value}" 无效')
 
