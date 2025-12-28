@@ -30,7 +30,7 @@ def convert_to_python_type(obj):
 print("正在加载模型文件...")
 
 try:
-    model = joblib.load('esophageal_cancer_rf_model.pkl')
+    model = joblib.load('esophageal_cancer_rf_model.joblib')
     print("✓ 模型加载成功")
 except Exception as e:
     print(f"✗ 模型加载失败: {e}")
