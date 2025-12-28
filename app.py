@@ -89,7 +89,7 @@ FEATURE_OPTIONS = {
         'Undifferentiated; anaplastic; Grade IV'
     ],
     'Age_Reclassified': ['<50', '50-60', '60-70', '70-80', '≥80'],
-    'histology': ['Squamous Cell Carcinoma', 'Adenocarcinoma', 'Neuroendocrine Carcinoma', 'Other Carcinoma']
+    'Histology': ['Squamous Cell Carcinoma', 'Adenocarcinoma', 'Neuroendocrine Carcinoma', 'Other Carcinoma']
 }
 
 # 中文标签映射
