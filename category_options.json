@@ -1,0 +1,50 @@
+{
+  "Sex": [
+    "Female",
+    "Male"
+  ],
+  "Race_Cat": [
+    "American Indian/Alaska Native",
+    "Asian or Pacific Islander",
+    "Black",
+    "White"
+  ],
+  "Location": [
+    "Abdominal/overlapping esophagus",
+    "Cervical esophagus",
+    "Lower third of esophagus",
+    "Middle third of esophagus",
+    "Upper third of esophagus"
+  ],
+  "Histology": [
+    "Adenocarcinoma",
+    "Neuroendocrine carcinoma",
+    "Other",
+    "Squamous cell carcinoma"
+  ],
+  "Grade_Cat": [
+    "Moderately differentiated; Grade II",
+    "Poorly differentiated; Grade III",
+    "Undifferentiated; anaplastic; Grade IV",
+    "Well differentiated; Grade I"
+  ],
+  "T_Stage": [
+    "T1",
+    "T2",
+    "T3",
+    "T4"
+  ],
+  "N_Stage": [
+    "N0",
+    "N1",
+    "N2",
+    "N3"
+  ],
+  "Age_Reclassified": [
+    "50-60",
+    "60-70",
+    "70-80",
+    "<50",
+    "≥80"
+  ]
+}

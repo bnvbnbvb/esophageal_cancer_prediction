@@ -1,0 +1,16 @@
+[
+  {
+    "method": "Platt (sigmoid)",
+    "val_auc": 0.762872,
+    "test_auc": 0.752906,
+    "val_brier": 0.055715,
+    "test_brier": 0.056499
+  },
+  {
+    "method": "Isotonic",
+    "val_auc": 0.778774,
+    "test_auc": 0.748636,
+    "val_brier": 0.054447,
+    "test_brier": 0.057387
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "base_model": "XGBoost",
+  "calibration_method": "Platt (sigmoid)",
+  "fitted_on": "validation set",
+  "val_auc_base": 0.762872,
+  "val_auc_calibrated": 0.762872,
+  "test_auc_base": 0.752906,
+  "test_auc_calibrated": 0.752906,
+  "brier_val_base": 0.204852,
+  "brier_val_calibrated": 0.055715,
+  "brier_test_base": 0.204068,
+  "brier_test_calibrated": 0.056499,
+  "youden_threshold": 0.066774,
+  "baseline_risk": 0.063182,
+  "n_samples": {
+    "train": 8530,
+    "val": 1828,
+    "test": 1829
+  }
+}

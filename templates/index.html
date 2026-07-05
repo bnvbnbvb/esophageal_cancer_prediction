@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esophageal Cancer Lung Metastasis Risk Prediction System</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🫁</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            padding: 30px 0;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .card-header-icon {
+            font-size: 2.5rem;
+        }
+
+        .card-header-text h2 {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+
+        .card-header-text p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .form-container {
+            padding: 30px;
+        }
+
+        .model-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+        }
+
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 18px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .api-status.checking {
+            background: #edf2f7;
+            color: #4a5568;
+        }
+
+        .api-status.success {
+            background: #f0fff4;
+            color: #276749;
+            border: 1px solid #9ae6b4;
+        }
+
+        .api-status.error {
+            background: #fff5f5;
+            color: #c53030;
+            border: 1px solid #feb2b2;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .api-status.checking .status-dot {
+            background: #a0aec0;
+        }
+
+        .api-status.success .status-dot {
+            background: #48bb78;
+        }
+
+        .api-status.error .status-dot {
+            background: #fc8181;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+        }
+
+        @media (max-width: 700px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .card-header {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.95rem;
+        }
+
+        .label-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 14px 45px 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background-color: #f8fafc;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23667eea' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 20px;
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+            background-color: white;
+        }
+
+        .form-group select:hover {
+            border-color: #cbd5e0;
+        }
+
+        .submit-section {
+            margin-top: 35px;
+            text-align: center;
+        }
+
+        .submit-btn {
+            padding: 18px 70px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1.15rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .submit-btn:active:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .submit-btn:disabled {
+            background: linear-gradient(135deg, #a0aec0 0%, #718096 100%);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 50px 70px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid #e2e8f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 25px;
+        }
+
+        .loading-content p {
+            color: #4a5568;
+            font-size: 1.1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            display: none;
+            background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+            border: 2px solid #fc8181;
+            color: #c53030;
+            padding: 18px 25px;
+            border-radius: 12px;
+            margin-top: 25px;
+            font-size: 0.95rem;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .result-section {
+            display: none;
+            margin-top: 35px;
+        }
+
+        .result-section.show {
+            display: block;
+            animation: slideUp 0.6s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-card {
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .result-header {
+            padding: 30px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .result-header.low {
+            background: linear-gradient(135deg, #48bb78 0%, #2f855a 100%);
+        }
+
+        .result-header.medium {
+            background: linear-gradient(135deg, #ed8936 0%, #c05621 100%);
+        }
+
+        .result-header.high {
+            background: linear-gradient(135deg, #fc8181 0%, #c53030 100%);
+        }
+
+        .result-icon {
+            font-size: 3.5rem;
+        }
+
+        .result-title h3 {
+            font-size: 1.6rem;
+            margin-bottom: 5px;
+        }
+
+        .result-title p {
+            opacity: 0.95;
+            font-size: 1rem;
+        }
+
+        .result-body {
+            background: white;
+            padding: 35px;
+        }
+
+        .probability-display {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .probability-circle {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            border: 10px solid #e2e8f0;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+
+        .probability-value {
+            font-size: 3rem;
+            font-weight: 700;
+        }
+
+        .probability-label {
+            font-size: 1rem;
+            color: #718096;
+            margin-top: 5px;
+        }
+
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 550px) {
+            .result-details {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .detail-item {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            padding: 22px;
+            border-radius: 14px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .detail-item:hover {
+            transform: translateX(5px);
+        }
+
+        .detail-item h4 {
+            color: #718096;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .detail-item p {
+            color: #2d3748;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .clinical-advice {
+            padding: 25px;
+            background: linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%);
+            border-radius: 14px;
+            border: 1px solid #90cdf4;
+            margin-bottom: 25px;
+        }
+
+        .clinical-advice h4 {
+            color: #2b6cb0;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+        }
+
+        .clinical-advice p {
+            color: #2c5282;
+            line-height: 1.8;
+            font-size: 0.95rem;
+        }
+
+        .new-prediction-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+            color: #4a5568;
+            border: 2px solid #cbd5e0;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .new-prediction-btn:hover {
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+            border-color: #a0aec0;
+            transform: translateY(-2px);
+        }
+
+        .raw-probability-toggle {
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .raw-probability-toggle a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .raw-probability-toggle a:hover {
+            text-decoration: underline;
+        }
+
+        .raw-probability {
+            display: none;
+            text-align: center;
+            padding: 12px;
+            background: #f7fafc;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+
+        .raw-probability.show {
+            display: block;
+        }
+
+        .shap-panel {
+            padding: 25px;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 25px;
+        }
+
+        .shap-panel h4 {
+            color: #2d3748;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+        }
+
+        .shap-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .shap-label {
+            width: 120px;
+            font-size: 0.9rem;
+            color: #4a5568;
+            text-align: right;
+            padding-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .shap-bar-wrapper {
+            flex: 1;
+            height: 24px;
+            background: #e2e8f0;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .shap-bar {
+            height: 100%;
+            border-radius: 12px;
+            transition: width 0.6s ease;
+        }
+
+        .shap-bar.increase {
+            background: linear-gradient(90deg, #fc8181 0%, #c53030 100%);
+        }
+
+        .shap-bar.decrease {
+            background: linear-gradient(90deg, #63b3ed 0%, #2b6cb0 100%);
+        }
+
+        .shap-value {
+            width: 70px;
+            font-size: 0.85rem;
+            color: #4a5568;
+            padding-left: 12px;
+            flex-shrink: 0;
+        }
+
+        .disclaimer {
+            margin-top: 35px;
+            padding: 25px;
+            background: linear-gradient(135deg, #fffaf0 0%, #feebc8 100%);
+            border-radius: 14px;
+            border: 1px solid #f6ad55;
+        }
+
+        .disclaimer h4 {
+            color: #c05621;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+        }
+
+        .disclaimer p {
+            color: #744210;
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 25px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+        }
+
+        .footer a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🫁 Esophageal Cancer Lung Metastasis Risk Prediction</h1>
+            <p>Machine Learning-Based Clinical Decision Support System (XGBoost, Calibrated)</p>
+        </div>
+
+        <div class="main-card">
+            <div class="card-header">
+                <div class="card-header-icon">🔬</div>
+                <div class="card-header-text">
+                    <h2>AI-Powered Precision Prediction</h2>
+                    <p>XGBoost Model | Stratified Split | Youden Threshold | Platt-Calibrated Probabilities</p>
+                </div>
+            </div>
+
+            <div class="form-container">
+                <div class="model-badge">
+                    <span>✓</span>
+                    <span>SEER Database | 12,187 Patients | Val AUC 0.76 | Calibrated</span>
+                </div>
+
+                <div class="api-status checking" id="apiStatus">
+                    <div class="status-dot"></div>
+                    <span>Checking model service status...</span>
+                </div>
+
+                <form id="predictionForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>
+                                <span class="label-icon">👤</span>
+                                Race
+                            </label>
+                            <select id="race" name="race" required>
+                                <option value="">Please select...</option>
+                                <option value="White">White</option>
+                                <option value="Black">Black</option>
+                                <option value="Asian or Pacific Islander">Asian or Pacific Islander</option>
+                                <option value="American Indian/Alaska Native">American Indian/Alaska Native</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <span class="label-icon">⚧</span>
+                                Sex
+                            </label>
+                            <select id="sex" name="sex" required>
+                                <option value="">Please select...</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+    <label>
+        <span class="label-icon">📍</span>
+        Primary Site
+    </label>
+    <select id="primarySite" name="primarySite" required>
+        <option value="">Please select...</option>
+        <option value="Cervical esophagus">Cervical esophagus</option>
+        <option value="Upper third of esophagus">Upper third of esophagus</option>
+        <option value="Middle third of esophagus">Middle third of esophagus</option>
+        <option value="Lower third of esophagus">Lower third of esophagus</option>
+        <option value="Abdominal/overlapping esophagus">Abdominal/Overlapping esophagus</option>
+    </select>
+</div>
+
+                        <div class="form-group">
+                            <label>
+                                <span class="label-icon">T</span>
+                                T Stage
+                            </label>
+                            <select id="tStage" name="tStage" required>
+                                <option value="">Please select...</option>
+                                <option value="T1">T1</option>
+                                <option value="T2">T2</option>
+                                <option value="T3">T3</option>
+                                <option value="T4">T4</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <span class="label-icon">N</span>
+                                N Stage
+                            </label>
+                            <select id="nStage" name="nStage" required>
+                                <option value="">Please select...</option>
+                                <option value="N0">N0</option>
+                                <option value="N1">N1</option>
+                                <option value="N2">N2</option>
+                                <option value="N3">N3</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <span class="label-icon">G</span>
+                                Grade
+                            </label>
+                            <select id="grade" name="grade" required>
+                                <option value="">Please select...</option>
+                                <option value="Well differentiated; Grade I">Well differentiated (Grade I)</option>
+                                <option value="Moderately differentiated; Grade II">Moderately differentiated (Grade II)</option>
+                                <option value="Poorly differentiated; Grade III">Poorly differentiated (Grade III)</option>
+                                <option value="Undifferentiated; anaplastic; Grade IV">Undifferentiated/Anaplastic (Grade IV)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <span class="label-icon">🎂</span>
+                                Age Group
+                            </label>
+                            <select id="age" name="age" required>
+                                <option value="">Please select...</option>
+                                <option value="<50">&lt; 50 years</option>
+                                <option value="50-60">50-60 years</option>
+                                <option value="60-70">60-70 years</option>
+                                <option value="70-80">70-80 years</option>
+                                <option value="≥80">≥ 80 years</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+    <label>
+        <span class="label-icon">🔬</span>
+        Histology
+    </label>
+    <select id="histology" name="histology" required>
+        <option value="">Please select...</option>
+        <option value="Squamous Cell Carcinoma">Squamous Cell Carcinoma</option>
+        <option value="Adenocarcinoma">Adenocarcinoma</option>
+        <option value="Neuroendocrine Carcinoma">Neuroendocrine Carcinoma</option>
+        <option value="Other Carcinoma">Other Carcinoma</option>
+    </select>
+</div>
+                    </div>
+
+                    <div class="submit-section">
+                        <button type="submit" class="submit-btn" id="submitBtn">
+                            🔮 Predict Risk
+                        </button>
+                    </div>
+                </form>
+
+                <div class="error-message" id="errorMessage"></div>
+
+                <div class="result-section" id="resultSection">
+                    <div class="result-card">
+                        <div class="result-header" id="resultHeader">
+                            <div class="result-icon" id="resultIcon">✅</div>
+                            <div class="result-title">
+                                <h3 id="resultTitle">Prediction Result</h3>
+                                <p id="resultSubtitle">Risk Assessment Complete</p>
+                            </div>
+                        </div>
+                        <div class="result-body">
+                            <div class="probability-display">
+                                <div class="probability-circle" id="probabilityCircle">
+                                    <div class="probability-value" id="probabilityValue">0%</div>
+                                    <div class="probability-label">Metastasis Probability</div>
+                                </div>
+                            </div>
+
+                            <div class="result-details">
+                                <div class="detail-item">
+                                    <h4>Risk Level</h4>
+                                    <p id="riskLevelText">-</p>
+                                </div>
+                                <div class="detail-item">
+                                    <h4>Prediction Class</h4>
+                                    <p id="predictionClass">-</p>
+                                </div>
+                                <div class="detail-item">
+                                    <h4>Decision Threshold</h4>
+                                    <p id="thresholdValue">-</p>
+                                </div>
+                                <div class="detail-item">
+                                    <h4>Model Confidence</h4>
+                                    <p id="confidenceValue">-</p>
+                                </div>
+                            </div>
+
+                            <div class="result-details">
+                                <div class="detail-item">
+                                    <h4>Cohort Baseline</h4>
+                                    <p id="baselineRisk">-</p>
+                                </div>
+                                <div class="detail-item">
+                                    <h4>Relative Risk</h4>
+                                    <p id="relativeRisk">-</p>
+                                </div>
+                                <div class="detail-item">
+                                    <h4>Risk Percentile</h4>
+                                    <p id="riskPercentile">-</p>
+                                </div>
+                                <div class="detail-item">
+                                    <h4>Calibration</h4>
+                                    <p id="calibrationStatus">-</p>
+                                </div>
+                            </div>
+
+                            <div class="raw-probability-toggle">
+                                <a id="rawProbToggle" onclick="toggleRawProbability()">Show uncalibrated probability</a>
+                            </div>
+                            <div class="raw-probability" id="rawProbability">
+                                Uncalibrated XGBoost probability: <strong id="rawProbabilityValue">-</strong>
+                            </div>
+
+                            <div class="shap-panel" id="shapPanel">
+                                <h4>📊 Top Factors Driving This Prediction</h4>
+                                <div id="shapContent">
+                                    <p style="color: #718096; font-size: 0.9rem;">SHAP explanation not available.</p>
+                                </div>
+                            </div>
+
+                            <div class="clinical-advice">
+                                <h4>📋 Clinical Recommendations</h4>
+                                <p id="clinicalAdvice">-</p>
+                            </div>
+
+                            <button type="button" class="new-prediction-btn" onclick="resetForm()">
+                                🔄 New Prediction
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="disclaimer">
+                    <h4>⚠️ Disclaimer</h4>
+                    <p>This prediction system is based on an XGBoost machine learning model trained on the SEER database (12,187 esophageal cancer patients, 6.32% lung metastasis rate). Probabilities are calibrated using Platt Scaling on the validation set (selected over Isotonic Regression by lower test Brier score) to better reflect true event likelihood. Risk levels are defined relative to the observed calibrated probability distribution in this cohort: low (&lt;5%), medium (5-15%), and high (&ge;15%). Even the highest predicted probability in this dataset is modest (around 20%). The model is intended for clinical reference only and has not been externally validated. Prediction results cannot replace professional medical diagnosis and treatment decisions. Please consider the patient's specific clinical situation, imaging findings, and laboratory results for comprehensive evaluation. Model performance may vary across different patient populations. Consult healthcare professionals if you have any questions.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2024 Esophageal Cancer Lung Metastasis Risk Prediction System | Based on SEER Database | XGBoost + Platt Calibration | 
+               <a href="/model_info" target="_blank">Model Info</a> | 
+               <a href="/health" target="_blank">Service Status</a>
+            </p>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p>Analyzing with XGBoost model...</p>
+        </div>
+    </div>
+
+    <script>
+        // API Base URL (use relative path for same-origin deployment)
+        const API_BASE_URL = '';
+
+        // Check API status on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkApiStatus();
+        });
+
+        // Check API status
+        async function checkApiStatus() {
+            const statusEl = document.getElementById('apiStatus');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    statusEl.className = 'api-status success';
+                    statusEl.innerHTML = `
+                        <div class="status-dot"></div>
+                        <span>✓ Model service running | Threshold: ${(data.threshold * 100).toFixed(1)}%</span>
+                    `;
+                    document.getElementById('submitBtn').disabled = false;
+                } else {
+                    throw new Error('API response not ok');
+                }
+            } catch (error) {
+                console.error('API check failed:', error);
+                statusEl.className = 'api-status error';
+                statusEl.innerHTML = `
+                    <div class="status-dot"></div>
+                    <span>✗ Model service connection failed. Please refresh the page.</span>
+                `;
+                document.getElementById('submitBtn').disabled = false;
+            }
+        }
+
+        // Form submission handler
+        document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const errorMessage = document.getElementById('errorMessage');
+            const resultSection = document.getElementById('resultSection');
+            
+            // Collect form data
+            const formData = {
+                race: document.getElementById('race').value,
+                sex: document.getElementById('sex').value,
+                primarySite: document.getElementById('primarySite').value,
+                tStage: document.getElementById('tStage').value,
+                nStage: document.getElementById('nStage').value,
+                grade: document.getElementById('grade').value,
+                age: document.getElementById('age').value,
+                histology: document.getElementById('histology').value
+            };
+            
+            // Validate all fields
+            for (let key in formData) {
+                if (!formData[key]) {
+                    showError('Please complete all required fields before prediction.');
+                    return;
+                }
+            }
+            
+            // Show loading state
+            loadingOverlay.classList.add('show');
+            errorMessage.classList.remove('show');
+            resultSection.classList.remove('show');
+            submitBtn.disabled = true;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/predict`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    displayResult(result);
+                } else {
+                    showError(result.error || 'Prediction failed. Please check input data and try again.');
+                }
+            } catch (error) {
+                console.error('Prediction error:', error);
+                showError('Network error: Unable to connect to prediction server. Please check your connection.');
+            } finally {
+                loadingOverlay.classList.remove('show');
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Display prediction result
+        function displayResult(result) {
+            const resultSection = document.getElementById('resultSection');
+            const resultHeader = document.getElementById('resultHeader');
+            
+            // Handle probability - check if it's an object or number
+            let probability;
+            if (typeof result.probability === 'object') {
+                probability = result.probability.positive / 100;
+            } else {
+                probability = result.probability;
+            }
+            
+            const riskLevel = result.risk_level;
+            
+            // Set risk level style
+            resultHeader.className = 'result-header ' + riskLevel;
+            
+            // Risk level configuration
+            const riskConfig = {
+                low: {
+                    icon: '✅',
+                    title: 'Low Risk',
+                    subtitle: 'Estimated lung metastasis probability below the baseline risk range. Standard follow-up recommended.',
+                    color: '#48bb78',
+                    levelText: 'Low Risk',
+                    advice: 'The estimated probability of lung metastasis is relatively low compared with the average risk in this cohort. Recommended: (1) Continue routine surveillance per institutional guidelines; (2) Maintain healthy lifestyle including smoking cessation and balanced diet; (3) Monitor for respiratory symptoms such as persistent cough, chest pain, or shortness of breath; (4) Remember that this is a population-level estimate and does not replace clinical judgment.'
+                },
+                medium: {
+                    icon: '⚠️',
+                    title: 'Medium Risk',
+                    subtitle: 'Estimated lung metastasis probability above baseline. Enhanced monitoring advised.',
+                    color: '#ed8936',
+                    levelText: 'Medium Risk',
+                    advice: 'The estimated probability of lung metastasis is higher than the cohort baseline. Recommendations: (1) Consider closer follow-up with chest imaging; (2) Monitor tumor markers and symptoms regularly; (3) Correlate with imaging, pathology, and overall clinical picture; (4) Individualize decisions rather than relying solely on this probability.'
+                },
+                high: {
+                    icon: '🚨',
+                    title: 'High Risk',
+                    subtitle: 'Estimated lung metastasis probability in the highest observed range. Further evaluation recommended.',
+                    color: '#e53e3e',
+                    levelText: 'High Risk',
+                    advice: 'This patient is in the highest risk group identified by the model. Recommendations: (1) Review recent imaging and consider contrast-enhanced chest CT if not recently performed; (2) Monitor respiratory symptoms and tumor markers closely; (3) Discuss findings in multidisciplinary team (MDT) or with the treating oncologist; (4) Note that even the highest predicted probability in this cohort is modest, so decisions must be individualized.'
+                }
+            };
+            
+            const config = riskConfig[riskLevel];
+            
+            document.getElementById('resultIcon').textContent = config.icon;
+            document.getElementById('resultTitle').textContent = config.title;
+            document.getElementById('resultSubtitle').textContent = config.subtitle;
+            
+            // Set probability display
+            const probabilityPercent = (probability * 100).toFixed(1);
+            document.getElementById('probabilityValue').textContent = probabilityPercent + '%';
+            
+            // Set circle color
+            const circle = document.getElementById('probabilityCircle');
+            circle.style.borderColor = config.color;
+            circle.style.color = config.color;
+            
+            // Set detailed information
+            document.getElementById('riskLevelText').textContent = config.levelText;
+            document.getElementById('predictionClass').textContent = 
+                result.prediction === 1 ? 'Positive (Likely Metastasis)' : 'Negative (Unlikely Metastasis)';
+            
+            // Handle threshold display
+            let thresholdValue;
+            if (typeof result.threshold === 'number') {
+                thresholdValue = result.threshold > 1 ? result.threshold : result.threshold * 100;
+            } else {
+                thresholdValue = 50;
+            }
+            document.getElementById('thresholdValue').textContent = thresholdValue.toFixed(1) + '%';
+            
+            // Handle confidence display
+            let confidenceValue;
+            if (typeof result.confidence === 'number') {
+                confidenceValue = result.confidence > 1 ? result.confidence : result.confidence * 100;
+            } else {
+                confidenceValue = Math.max(probability * 100, (1 - probability) * 100);
+            }
+            document.getElementById('confidenceValue').textContent = confidenceValue.toFixed(1) + '%';
+            
+            // Baseline risk, relative risk, percentile
+            document.getElementById('baselineRisk').textContent = 
+                (typeof result.baseline_risk === 'number') ? result.baseline_risk.toFixed(2) + '%' : '6.32%';
+            document.getElementById('relativeRisk').textContent = 
+                (typeof result.relative_risk === 'number') ? result.relative_risk.toFixed(2) + '×' : '-';
+            document.getElementById('riskPercentile').textContent = 
+                (typeof result.percentile === 'number') ? 'Higher than ' + result.percentile.toFixed(1) + '% of cohort' : '-';
+            document.getElementById('calibrationStatus').textContent = 
+                result.calibrated ? 'Platt Scaling (enabled)' : 'Disabled';
+            
+            // Raw probability toggle
+            const rawProbEl = document.getElementById('rawProbability');
+            const rawProbToggle = document.getElementById('rawProbToggle');
+            if (typeof result.probability === 'object' && typeof result.probability.raw === 'number') {
+                document.getElementById('rawProbabilityValue').textContent = result.probability.raw.toFixed(2) + '%';
+                rawProbEl.classList.remove('show');
+                rawProbToggle.style.display = 'inline';
+                rawProbToggle.textContent = 'Show uncalibrated probability';
+            } else {
+                rawProbToggle.style.display = 'none';
+            }
+            
+            // SHAP explanation
+            const shapPanel = document.getElementById('shapPanel');
+            const shapContent = document.getElementById('shapContent');
+            if (Array.isArray(result.shap_explanation) && result.shap_explanation.length > 0) {
+                shapPanel.style.display = 'block';
+                let shapHtml = '';
+                const maxAbs = Math.max(...result.shap_explanation.map(item => Math.abs(item.contribution)), 1e-10);
+                result.shap_explanation.forEach(item => {
+                    const width = Math.min((Math.abs(item.contribution) / maxAbs) * 100, 100);
+                    const barClass = item.direction === 'increases' ? 'increase' : 'decrease';
+                    const sign = item.direction === 'increases' ? '+' : '';
+                    shapHtml += `
+                        <div class="shap-item">
+                            <div class="shap-label">${item.feature}</div>
+                            <div class="shap-bar-wrapper">
+                                <div class="shap-bar ${barClass}" style="width: ${width}%"></div>
+                            </div>
+                            <div class="shap-value">${sign}${item.contribution.toFixed(4)}</div>
+                        </div>
+                    `;
+                });
+                shapContent.innerHTML = shapHtml;
+            } else {
+                shapPanel.style.display = 'none';
+            }
+            
+            // Set clinical advice
+            document.getElementById('clinicalAdvice').textContent = config.advice;
+            
+            // Show result section and scroll into view
+            resultSection.classList.add('show');
+            setTimeout(() => {
+                resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+
+        // Toggle raw probability display
+        function toggleRawProbability() {
+            const rawProbEl = document.getElementById('rawProbability');
+            const rawProbToggle = document.getElementById('rawProbToggle');
+            if (rawProbEl.classList.contains('show')) {
+                rawProbEl.classList.remove('show');
+                rawProbToggle.textContent = 'Show uncalibrated probability';
+            } else {
+                rawProbEl.classList.add('show');
+                rawProbToggle.textContent = 'Hide uncalibrated probability';
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+            errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('predictionForm').reset();
+            document.getElementById('resultSection').classList.remove('show');
+            document.getElementById('errorMessage').classList.remove('show');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
+
